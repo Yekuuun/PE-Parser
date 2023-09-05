@@ -15,6 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCES
     src/main.cpp
     src/handlePE.cpp
+    src/utils.cpp
 )
 
 add_executable(parser ${SOURCES})
