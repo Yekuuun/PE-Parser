@@ -38,3 +38,10 @@ Retrieve all interesting informations in a x86 & x64 PE file format
   3. go to `/build` and run `cmake ..`.
   4. build project with `cmake --build .`.
   5. go to `/Debug` & run `./parser <path_to_exe_file.exe>`
+
+---
+
+## Images 
+
+![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/7f80ee7e-6116-43b5-9ed9-f27d5b68ae0f)
+
