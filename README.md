@@ -17,7 +17,17 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 ## Features 
 
-**Under construction...**
+🟢 **DOS HEADER informations** 
+
+🟢 **FILE HEADER informations**
+
+🟢 **NT HEADER informations**
+
+🔴 **Loaded DLL's + functions**
+
+🔴 **Exported functions**
+
+🔴 **Sections informations**
 
 ---
 
