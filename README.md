@@ -21,7 +21,7 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 🟢 **FILE HEADER informations**
 
-🟢 **NT HEADER informations**
+🔴 **ALL NT HEADER informations**
 
 🔴 **Loaded DLL's + functions**
 
