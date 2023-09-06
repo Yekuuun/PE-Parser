@@ -176,6 +176,8 @@ void get_nt_header_infos(PIMAGE_NT_HEADERS nt){
     std::cout << "SizeOfHeapCommit: " << ptr_optional_header.SizeOfHeapCommit << std::endl;
     std::cout << "LoaderFlags: " << ptr_optional_header.LoaderFlags << std::endl;
     std::cout << "NumberOfRvaAndSizes: " << ptr_optional_header.NumberOfRvaAndSizes << std::endl;
+
+    std::cout << "\n---------------NT HEADER INFOS-----------------\n" << std::endl;
 }
 
 //get directories data
@@ -205,6 +207,8 @@ void get_data_directories_infos(PIMAGE_NT_HEADERS nt){
         std::cout << "RVA : " << std::hex << importsDir.VirtualAddress << std::endl;
         std::cout << "Size : " << std::hex << importsDir.Size << std::endl;
     }
+
+    std::cout << "\n---------------DATA DIRECTORIES INFOS-----------\n" << std::endl;
 }
 
 //DOS HEADER INFORMATIONS
