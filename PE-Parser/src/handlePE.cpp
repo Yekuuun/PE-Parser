@@ -116,26 +116,16 @@ PIMAGE_NT_HEADERS get_nt_hdr(BYTE* loadPE)
 
 bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
 
-    //go to import directory
-    PIMAGE_DATA_DIRECTORY importsDir = &nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+    IMAGE_DATA_DIRECTORY importsDir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
 
-    if(importsDir->VirtualAddress == NULL){
+    if(importsDir.VirtualAddress == 0){
         return false;
     }
 
-    //go to IMAGE_IMPORT_DESCRIPTOR adding address of data directory virtualAddress + file base address in memory to get to correct start address of struct
-    PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(importsDir->VirtualAddress + (FIELD_PTR)baseAddress);
+    //go to IMPORT DESCRIPTOR
+    PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(importsDir.VirtualAddress + (FIELD_PTR)baseAddress);
 
-
-    //on each DLL
-    while(importDescriptor->Name != NULL){
-        std::cout << "Loaded DLL's : \n" << std::endl;
-        LPCSTR libraryName = (LPCSTR)((FIELD_PTR)baseAddress + importDescriptor->Name);
-        std::cout << "Library : " << libraryName << "\n" << std::endl;
-        importDescriptor++;
-    }
-
-    return true;
+    //??????
 }
 
 //FILE HEADER INFORMATIONS

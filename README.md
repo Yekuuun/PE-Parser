@@ -41,7 +41,4 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 ---
 
-## Images 
-
-![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/7f80ee7e-6116-43b5-9ed9-f27d5b68ae0f)
 
