@@ -39,4 +39,8 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 ---
 
+## Greetings
+
+-> Thanks to <a href="https://github.com/hasherezade">Hasherezad</a> & <a href="https://github.com/arsium">Arsium</a>
+
 

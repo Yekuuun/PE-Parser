@@ -11,10 +11,52 @@ github : https://github.com/Yekuuun
 
 int LoadPEFile(LPCWSTR filename){
 
-    //params
-    HANDLE hFileMapping;
+    //get ptr to PE base address in memory
+    BYTE* PEBaseAddress = read_pe_file(filename);
+    if(PEBaseAddress == NULL){
+        return 1;
+    }
+
+    //nt header ptr
+    PIMAGE_NT_HEADERS nt_header = get_nt_hdr(PEBaseAddress);
+    if(nt_header == NULL){
+        return 1;
+    }
+
+    BYTE* image_address = allocate_size_map_image(nt_header);
+    if(image_address == NULL){
+        return 1;
+    }
+
+    //manual map
+    manual_map(image_address, PEBaseAddress, nt_header);
+    if (!relocate(image_address, nt_header, (FIELD_PTR)image_address)) {
+        std::cerr << "Relocating image has failed\n";
+        return false;
+    }
+
+    //dos header
+    get_dos_header_infos(PEBaseAddress);
+
+    //data directories
+    get_data_directories_infos(nt_header);
+
+    //file header
+    get_nt_header_infos(nt_header);
+
+    //loaded DLL's
+    if(!get_loaded_imports(image_address, nt_header)){
+        std::cout << "No imports founded...\n" << std::endl;
+    }
+
+    return 0;
+}
+
+//-------------------------------MEMORY MAPPING--------------------------------
+
+//read PE file
+BYTE* read_pe_file(LPCWSTR filename){
     HANDLE hFile;
-    LPVOID lpFileBase;
 
     //get handle to file.
     hFile = CreateFileW(
@@ -29,70 +71,92 @@ int LoadPEFile(LPCWSTR filename){
     if(hFile == INVALID_HANDLE_VALUE){
         DWORD lastError = GetLastError();
         lastError == 2 ? std::cout << "File not found \n" << std::endl : std::cout << "Unable to get handle to file with error : " << lastError << "\n" << std::endl;
-        return 1;
+        return NULL;
     }
 
-    hFileMapping = CreateFileMapping(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-    if ( hFileMapping == 0 )
-    {   
-        std::cout << "Couldn't open file mapping with CreateFileMapping() with error : "<< GetLastError() << "\n" << std::endl;
-        goto CLEANUP;
-    }
-    
-    //map file into memory
-    lpFileBase = MapViewOfFile(hFileMapping, FILE_MAP_READ, 0, 0, 0);
-    if ( lpFileBase == 0 )
-    {
-        std::cout << "Couldn't map file into memory with error : " << GetLastError() << "\n" << std::endl;
-        goto CLEANUP;
-    }
-
-    //BYTE ptr
-    BYTE* PEBaseAddress = (BYTE*)lpFileBase;
-
-    //nt header
-    PIMAGE_NT_HEADERS nt_header = get_nt_hdr(PEBaseAddress);
-
-    if(nt_header == NULL){
-        goto CLEANUP;
-    }
-
-    //loaded DLL's
-    if(!get_loaded_imports(PEBaseAddress, nt_header)){
-        std::cout << "No imports founded...\n" << std::endl;
-    }
-
-    //dos header
-    get_dos_header_infos(PEBaseAddress);
-
-    //data directories
-    get_data_directories_infos(nt_header);
-
-    //file header
-    get_nt_header_infos(nt_header);
-
-    goto SUCCESS;
-
-    CLEANUP:
-        if(hFile){
-            CloseHandle(hFile);
-        }
-
-        if(hFileMapping){
-            CloseHandle(hFileMapping);
-        }
-
-        if(lpFileBase){
-            UnmapViewOfFile(lpFileBase);
-        }
-        return 1;
-
-    SUCCESS:
-        UnmapViewOfFile(lpFileBase);
-        CloseHandle(hFileMapping);
+    //file size
+    DWORD size = GetFileSize(hFile, NULL);
+    if (size == INVALID_FILE_SIZE) {
         CloseHandle(hFile);
-        return 0;
+        return NULL;
+    }
+
+    //read the file
+    BYTE* rawPE = new BYTE[size];
+    if (!ReadFile(hFile, rawPE, size, NULL, NULL)) {
+        std::cerr << "[ERROR] Reading the file has failed!\n";
+        delete[]rawPE;
+        rawPE = NULL;
+    }
+
+    CloseHandle(hFile);
+
+    //ptr to PE
+    return rawPE;
 }
+
+//map sections
+BYTE* allocate_size_map_image(PIMAGE_NT_HEADERS nt){
+    
+    BYTE* image = (BYTE*)VirtualAlloc(NULL, nt->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE ,PAGE_READWRITE);
+
+    if(image == NULL){
+        std::cerr << "[ERROR] Unable to map sections into memory\n";
+        return NULL;
+    }
+
+    return image;
+}
+
+//manual mapping
+void manual_map(BYTE* image, BYTE *rawPE, PIMAGE_NT_HEADERS nt){
+    memcpy(image, rawPE, nt->OptionalHeader.SizeOfHeaders);
+
+    // map sections
+    PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt);
+    for (WORD i = 0; i < nt->FileHeader.NumberOfSections; i++) {
+
+        memcpy((BYTE*)(image)+section[i].VirtualAddress, (BYTE*)(rawPE)+section[i].PointerToRawData, section[i].SizeOfRawData);
+    }
+}
+
+//relocating -> thanks to Hasherezade
+bool relocate(BYTE* image, PIMAGE_NT_HEADERS nt, FIELD_PTR newImgBase){
+    IMAGE_DATA_DIRECTORY relocationsDirectory = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+    if (relocationsDirectory.VirtualAddress == 0) {
+        return false;
+    }
+
+    PIMAGE_BASE_RELOCATION ProcessBReloc = (PIMAGE_BASE_RELOCATION)(relocationsDirectory.VirtualAddress + (FIELD_PTR)image);
+    // apply relocations:
+    while (ProcessBReloc->VirtualAddress != 0)
+    {
+        DWORD page = ProcessBReloc->VirtualAddress;
+
+        if (ProcessBReloc->SizeOfBlock >= sizeof(IMAGE_BASE_RELOCATION))
+        {
+            size_t count = (ProcessBReloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+            BASE_RELOCATION_ENTRY* list = (BASE_RELOCATION_ENTRY*)(LPWORD)(ProcessBReloc + 1);
+
+            for (size_t i = 0; i < count; i++)
+            {
+                if (list[i].Type & RELOC_FIELD)
+                {
+                    DWORD rva = list[i].Offset + page;
+
+                    PULONG_PTR p = (PULONG_PTR)((LPBYTE)image + rva);
+                    //relocate the address
+                    *p = ((*p) - nt->OptionalHeader.ImageBase) + (FIELD_PTR)newImgBase;
+                }
+            }
+        }
+        ProcessBReloc = (PIMAGE_BASE_RELOCATION)((LPBYTE)ProcessBReloc + ProcessBReloc->SizeOfBlock);
+    }
+    return true;
+}
+
+
+//--------------------------------PE MANIPULATION----------------------------------------
 
 //get NT_HEADER address
 PIMAGE_NT_HEADERS get_nt_hdr(BYTE* loadPE)
@@ -124,10 +188,19 @@ bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
         return false;
     }
 
+    std::cout << "\n\n---------------DLL IMPORTS-----------------\n" << std::endl;
     //go to IMPORT DESCRIPTOR
     PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(importsDir.VirtualAddress + (FIELD_PTR)baseAddress);
 
-    //??????
+    while(importDescriptor->Name != NULL){
+        std::cout << "Loaded DLL's : " << std::endl;
+        LPCSTR libraryName = (LPCSTR)(importDescriptor->Name + (FIELD_PTR)baseAddress);
+        std::cout << "Library name :" << libraryName << std::endl;
+        importDescriptor++;
+    }
+
+    std::cout << "\n---------------DLL IMPORTS-----------------\n" << std::endl;
+    return true;
 }
 
 //FILE HEADER INFORMATIONS

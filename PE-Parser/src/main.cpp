@@ -40,8 +40,9 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
 
-
-    std::cout << "\nPE operations successfully made !\n" << std::endl;
+    std::cout << "\033[1;35m";
+    std::cout << "PE operations successfully made !\n" << std::endl;
+    std::cout << "\033[0m";
 
     return EXIT_SUCCESS;
 }
