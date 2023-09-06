@@ -21,11 +21,11 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 🟢 **NT HEADER informations**
 
-🔴 **Loaded DLL's + functions**
+🟢 **Loaded DLL's + functions**
 
 🔴 **Exported functions**
 
-🔴 **Sections informations**
+🟢 **Sections informations**
 
 ---
 
