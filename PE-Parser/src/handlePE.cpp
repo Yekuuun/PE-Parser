@@ -65,8 +65,11 @@ int LoadPEFile(LPCWSTR filename){
     //dos header
     get_dos_header_infos(PEBaseAddress);
 
+    //data directories
+    get_data_directories_infos(nt_header);
+
     //file header
-    get_file_header_infos(nt_header);
+    get_nt_header_infos(nt_header);
 
     goto SUCCESS;
 
@@ -113,7 +116,6 @@ PIMAGE_NT_HEADERS get_nt_hdr(BYTE* loadPE)
 }
 
 //get loaded imports
-
 bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
 
     IMAGE_DATA_DIRECTORY importsDir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
@@ -129,18 +131,80 @@ bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
 }
 
 //FILE HEADER INFORMATIONS
-void get_file_header_infos(PIMAGE_NT_HEADERS nt){
-
+void get_nt_header_infos(PIMAGE_NT_HEADERS nt){
 
     IMAGE_FILE_HEADER ptr_file_header = (IMAGE_FILE_HEADER)nt->FileHeader;
+    IMAGE_OPTIONAL_HEADER ptr_optional_header = (IMAGE_OPTIONAL_HEADER)nt->OptionalHeader;
 
-    //display informations
-    std::cout << "---------------FILE HEADER INFOS---------------- \n" << std::endl;
+    std::cout << "\n\n---------------NT HEADER INFOS-----------------\n" << std::endl;
+
+    std::cout << "PE file signature : " << std::hex << nt->Signature << std::endl;
+
+    std::cout << "\nFILE HEADER : " << std::endl;
     std::cout << std::hex << "Machine : " << ptr_file_header.Machine << std::endl;
     std::cout << std::hex << "Sections count : " << ptr_file_header.NumberOfSections << std::endl;
     std::cout << std::hex << "Timestamp : " << ptr_file_header.TimeDateStamp << std::endl;
-    std::cout << std::hex << "Size optionnal header : " << ptr_file_header.SizeOfOptionalHeader << std::endl;
-    std::cout << "\n---------------FILE HEADER INFOS-----------------" << std::endl;
+    std::cout << std::hex << "Size optionnal header : " << ptr_file_header.SizeOfOptionalHeader << "\n" << std::endl;
+
+    std::cout << "OPTIONNAL HEADER : " << std::endl;
+    std::cout << "Magic: " << std::hex << ptr_optional_header.Magic << std::endl;
+    std::cout << "MajorLinkerVersion: " << static_cast<int>(ptr_optional_header.MajorLinkerVersion) << std::endl;
+    std::cout << "MinorLinkerVersion: " << static_cast<int>(ptr_optional_header.MinorLinkerVersion) << std::endl;
+    std::cout << "SizeOfCode: " << ptr_optional_header.SizeOfCode << std::endl;
+    std::cout << "SizeOfInitializedData: " << ptr_optional_header.SizeOfInitializedData << std::endl;
+    std::cout << "SizeOfUninitializedData: " << ptr_optional_header.SizeOfUninitializedData << std::endl;
+    std::cout << "AddressOfEntryPoint: " << ptr_optional_header.AddressOfEntryPoint << std::endl;
+    std::cout << "BaseOfCode: " << ptr_optional_header.BaseOfCode << std::endl;
+    std::cout << "ImageBase: " << ptr_optional_header.ImageBase << std::endl;
+    std::cout << "SectionAlignment: " << ptr_optional_header.SectionAlignment << std::endl;
+    std::cout << "FileAlignment: " << ptr_optional_header.FileAlignment << std::endl;
+    std::cout << "MajorOperatingSystemVersion: " << ptr_optional_header.MajorOperatingSystemVersion << std::endl;
+    std::cout << "MinorOperatingSystemVersion: " << ptr_optional_header.MinorOperatingSystemVersion << std::endl;
+    std::cout << "MajorImageVersion: " << ptr_optional_header.MajorImageVersion << std::endl;
+    std::cout << "MinorImageVersion: " << ptr_optional_header.MinorImageVersion << std::endl;
+    std::cout << "MajorSubsystemVersion: " << ptr_optional_header.MajorSubsystemVersion << std::endl;
+    std::cout << "MinorSubsystemVersion: " << ptr_optional_header.MinorSubsystemVersion << std::endl;
+    std::cout << "Win32VersionValue: " << ptr_optional_header.Win32VersionValue << std::endl;
+    std::cout << "SizeOfImage: " << ptr_optional_header.SizeOfImage << std::endl;
+    std::cout << "SizeOfHeaders: " << ptr_optional_header.SizeOfHeaders << std::endl;
+    std::cout << "CheckSum: " << ptr_optional_header.CheckSum << std::endl;
+    std::cout << "Subsystem: " << ptr_optional_header.Subsystem << std::endl;
+    std::cout << "DllCharacteristics: " << ptr_optional_header.DllCharacteristics << std::endl;
+    std::cout << "SizeOfStackReserve: " << ptr_optional_header.SizeOfStackReserve << std::endl;
+    std::cout << "SizeOfStackCommit: " << ptr_optional_header.SizeOfStackCommit << std::endl;
+    std::cout << "SizeOfHeapReserve: " << ptr_optional_header.SizeOfHeapReserve << std::endl;
+    std::cout << "SizeOfHeapCommit: " << ptr_optional_header.SizeOfHeapCommit << std::endl;
+    std::cout << "LoaderFlags: " << ptr_optional_header.LoaderFlags << std::endl;
+    std::cout << "NumberOfRvaAndSizes: " << ptr_optional_header.NumberOfRvaAndSizes << std::endl;
+}
+
+//get directories data
+void get_data_directories_infos(PIMAGE_NT_HEADERS nt){
+
+    std::cout << "\n---------------DATA DIRECTORIES INFOS-----------\n" << std::endl;
+
+    IMAGE_DATA_DIRECTORY exportsDir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
+    IMAGE_DATA_DIRECTORY importsDir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT];
+
+    if(exportsDir.VirtualAddress == 0){
+        std::cout << "No export directories \n";
+    }
+
+    else {
+        std::cout << "EXPORT DIR :" << std::endl;
+        std::cout << "RVA : " << std::hex << exportsDir.VirtualAddress << std::endl;
+        std::cout << "Size : " << std::hex << exportsDir.Size << std::endl;
+    }
+
+    if(importsDir.VirtualAddress == 0){
+        std::cout << "No import directories \n";
+    }
+
+    else {
+        std::cout << "\nIMPORT DIR :" << std::endl;
+        std::cout << "RVA : " << std::hex << importsDir.VirtualAddress << std::endl;
+        std::cout << "Size : " << std::hex << importsDir.Size << std::endl;
+    }
 }
 
 //DOS HEADER INFORMATIONS
@@ -163,5 +227,4 @@ void get_dos_header_infos(BYTE* baseAddress){
     std::cout << std::hex << "initial CS value :" << dos_header->e_cs  <<std::endl;
     std::cout << std::hex << "File address relocation table :" << dos_header->e_lfarlc  <<std::endl;
     std::cout << "\n---------------DOS HEADER INFOS-----------------\n" << std::endl;
-
 }

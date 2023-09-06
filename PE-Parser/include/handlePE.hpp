@@ -6,7 +6,8 @@
 int LoadPEFile(LPCWSTR filename);
 PIMAGE_NT_HEADERS get_nt_hdr(BYTE* loadPE);
 bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt);
-void get_file_header_infos(PIMAGE_NT_HEADERS nt);
+void get_nt_header_infos(PIMAGE_NT_HEADERS nt);
+void get_data_directories_infos(PIMAGE_NT_HEADERS nt);
 void get_dos_header_infos(BYTE* baseAddress);
 void display_pe_parser();
 
