@@ -23,7 +23,7 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 🟢 **Loaded DLL's + functions**
 
-🔴 **Exported functions**
+🟢 **RELOCATIONS informations**
 
 🟢 **Sections informations**
 

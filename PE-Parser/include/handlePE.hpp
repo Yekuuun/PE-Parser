@@ -15,6 +15,7 @@ int LoadPEFile(LPCWSTR filename);
 //PE manipulation
 PIMAGE_NT_HEADERS get_nt_hdr(BYTE* loadPE);
 bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt);
+bool get_relocations_infos(BYTE* baseAddress, PIMAGE_NT_HEADERS nt);
 void get_nt_header_infos(PIMAGE_NT_HEADERS nt);
 void get_data_directories_infos(PIMAGE_NT_HEADERS nt);
 void get_dos_header_infos(BYTE* baseAddress);

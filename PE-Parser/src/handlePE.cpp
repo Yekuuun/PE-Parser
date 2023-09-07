@@ -52,7 +52,40 @@ int LoadPEFile(LPCWSTR filename){
         std::cout << "No imports founded...\n" << std::endl;
     }
 
+    if(!get_relocations_infos(image_address, nt_header)){
+        std::cout << "No relocations founded..." << std::endl;
+    }
+
     return 0;
+}
+
+//get relocations
+bool get_relocations_infos(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
+
+    IMAGE_DATA_DIRECTORY baseReloc = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC];
+
+    if(baseReloc.VirtualAddress == 0){
+        return false;
+    }
+
+    std::cout << "\n\n---------------RELOCATIONS-----------------\n" << std::endl;
+
+    PIMAGE_BASE_RELOCATION ptr_baseReloc = (PIMAGE_BASE_RELOCATION)((FIELD_PTR)baseAddress + baseReloc.VirtualAddress);
+
+    while(ptr_baseReloc->VirtualAddress != NULL){
+        
+        DWORD numRelocations = (ptr_baseReloc->SizeOfBlock - sizeof(IMAGE_BASE_RELOCATION)) / sizeof(WORD);
+
+        WORD* pRelocations = (WORD*)((BYTE*)ptr_baseReloc + sizeof(IMAGE_BASE_RELOCATION));
+
+        std::cout << "Offset : " << pRelocations << std::hex << " Block size : " << ptr_baseReloc->SizeOfBlock << " Entries count : " << numRelocations << std::endl;
+
+        ptr_baseReloc = (PIMAGE_BASE_RELOCATION)((BYTE*)ptr_baseReloc + ptr_baseReloc->SizeOfBlock);
+    }
+
+    std::cout << "\n\n---------------RELOCATIONS-----------------\n" << std::endl;
+
+    return true;
 }
 
 
@@ -98,7 +131,7 @@ bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
         //functions
         PIMAGE_THUNK_DATA ptr_thunk = (PIMAGE_THUNK_DATA)((FIELD_PTR)baseAddress + importDescriptor->FirstThunk);
 
-        std::cout << "Functions : \n" << std::endl;
+        std::cout << "\nFunctions :" << std::endl;
         while(ptr_thunk->u1.AddressOfData != NULL){
             PIMAGE_IMPORT_BY_NAME import_by_name = (PIMAGE_IMPORT_BY_NAME)((FIELD_PTR)baseAddress + ptr_thunk->u1.AddressOfData);
             LPCSTR functionName = (LPCSTR)import_by_name->Name;
