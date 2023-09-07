@@ -16,6 +16,7 @@ set(SOURCES
     src/main.cpp
     src/handlePE.cpp
     src/utils.cpp
+    src/manualMap.cpp
 )
 
 add_executable(parser ${SOURCES})

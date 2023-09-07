@@ -1,3 +1,10 @@
+/*
+
+author : Yekuuun
+github : https://github.com/Yekuuun
+
+*/
+
 #include <iostream>
 #include <string.h>
 #include "utils.hpp"
