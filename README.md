@@ -39,15 +39,6 @@ Retrieve interesting informations in a x86 & x64 PE file format. This project wa
 
 ---
 
-## Images 
-
-![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/f83c86e7-a851-451a-b07a-56bbfb91ba79)
-![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/501a57a2-4c9f-4eb4-8ef8-d2926cd56a20)
-![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/402ad323-355f-4271-9331-d5ccb7396c63)
-
-
----
-
 ## Greetings
 
 -> **Thanks to <a href="https://github.com/hasherezade">Hasherezade</a> & <a href="https://github.com/arsium">Arsium</a> for code examples & infos**
