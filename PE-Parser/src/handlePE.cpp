@@ -90,10 +90,22 @@ bool get_loaded_imports(BYTE* baseAddress, PIMAGE_NT_HEADERS nt){
     //go to IMPORT DESCRIPTOR
     PIMAGE_IMPORT_DESCRIPTOR importDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)(importsDir.VirtualAddress + (FIELD_PTR)baseAddress);
 
+    std::cout << "Loaded DLL's & functions : " << std::endl;
     while(importDescriptor->Name != NULL){
-        std::cout << "Loaded DLL's : " << std::endl;
         LPCSTR libraryName = (LPCSTR)(importDescriptor->Name + (FIELD_PTR)baseAddress);
         std::cout << "Library name :" << libraryName << std::endl;
+
+        //functions
+        PIMAGE_THUNK_DATA ptr_thunk = (PIMAGE_THUNK_DATA)((FIELD_PTR)baseAddress + importDescriptor->FirstThunk);
+
+        std::cout << "Functions : \n" << std::endl;
+        while(ptr_thunk->u1.AddressOfData != NULL){
+            PIMAGE_IMPORT_BY_NAME import_by_name = (PIMAGE_IMPORT_BY_NAME)((FIELD_PTR)baseAddress + ptr_thunk->u1.AddressOfData);
+            LPCSTR functionName = (LPCSTR)import_by_name->Name;
+            std::cout << functionName << std::endl;
+            ptr_thunk++;
+        }
+
         importDescriptor++;
     }
 
