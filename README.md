@@ -13,7 +13,7 @@
 
 ## About it 📕
 
-Retrieve all interesting informations in a x86 & x64 PE file format
+Retrieve interesting informations in a x86 & x64 PE file format. This project was developped due to my interest for Windows internals & learning how to manipulate PE files with C++.
 
 ## Features 
 
@@ -23,7 +23,7 @@ Retrieve all interesting informations in a x86 & x64 PE file format
 
 🟢 **Loaded DLL's + functions**
 
-🟢 **RELOCATIONS informations**
+🟢 **Relocations informations**
 
 🟢 **Sections informations**
 
@@ -36,6 +36,15 @@ Retrieve all interesting informations in a x86 & x64 PE file format
   3. go to `/build` and run `cmake ..`.
   4. build project with `cmake --build .`.
   5. go to `/Debug` & run `./parser <path_to_exe_file.exe>`
+
+---
+
+## Images 
+
+![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/f83c86e7-a851-451a-b07a-56bbfb91ba79)
+![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/501a57a2-4c9f-4eb4-8ef8-d2926cd56a20)
+![image](https://github.com/Yekuuun/PE-Parser/assets/126786628/402ad323-355f-4271-9331-d5ccb7396c63)
+
 
 ---
 
